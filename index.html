@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#0b0b12" />
+  <title>Phone Drop</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0b12;
+      --panel: #151520;
+      --muted: #9999ad;
+      --purple: #8b5cf6;
+      --pink: #ec4899;
+      --green: #4ade80;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 50% -15%, #36205d 0, transparent 42%),
+        var(--bg);
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button { font: inherit; }
+
+    .app {
+      width: min(100%, 520px);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 18px 16px 100px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+
+    .brand {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -.7px;
+    }
+
+    .brand span { color: #b78cff; }
+
+    .balance {
+      padding: 10px 14px;
+      border: 1px solid #ffffff18;
+      border-radius: 14px;
+      background: #ffffff0b;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 23px 20px;
+      min-height: 156px;
+      border: 1px solid #ffffff18;
+      border-radius: 24px;
+      background: linear-gradient(125deg, #44227c, #211642 58%, #171322);
+      box-shadow: 0 16px 45px #0006;
+    }
+
+    .hero::after {
+      content: "📱";
+      position: absolute;
+      right: 15px;
+      bottom: -24px;
+      font-size: 122px;
+      transform: rotate(-14deg);
+      opacity: .8;
+      filter: drop-shadow(0 8px 25px #0008);
+    }
+
+    .hero h1 {
+      position: relative;
+      z-index: 1;
+      max-width: 250px;
+      margin: 0 0 8px;
+      font-size: 27px;
+      line-height: 1.05;
+    }
+
+    .hero p {
+      position: relative;
+      z-index: 1;
+      max-width: 235px;
+      margin: 0;
+      color: #ddd4f4;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .daily {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 16px 0 23px;
+      padding: 15px;
+      border: 1px solid #ffffff12;
+      border-radius: 18px;
+      background: linear-gradient(110deg, #171723, #1d1830);
+    }
+
+    .daily-title { font-weight: 800; }
+    .daily-sub { margin-top: 4px; color: var(--muted); font-size: 12px; }
+
+    .button {
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 14px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .button:disabled {
+      color: #b5b5c4;
+      background: #343442;
+      cursor: default;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      margin: 22px 2px 12px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: 19px;
+    }
+
+    .section-head span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .cases, .inventory {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .case, .phone-card {
+      position: relative;
+      overflow: hidden;
+      padding: 14px;
+      border: 1px solid #ffffff14;
+      border-radius: 19px;
+      background: linear-gradient(145deg, #20202d, #13131c);
+    }
+
+    .case-art {
+      display: grid;
+      place-items: center;
+      height: 104px;
+      margin: -2px -4px 10px;
+      border-radius: 15px;
+      background:
+        radial-gradient(circle at 50% 65%, #9a62ff55, transparent 46%),
+        linear-gradient(135deg, #272039, #171722);
+      font-size: 65px;
+      filter: drop-shadow(0 9px 12px #0008);
+    }
+
+    .case h3, .phone-card h3 {      margin: 0 0 5px;
+      font-size: 15px;
+    }
+
+    .case p, .phone-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .case-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .price {
+      color: #e9d5ff;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .open-button {
+      border: 0;
+      border-radius: 10px;
+      padding: 9px 11px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .open-button:disabled {
+      opacity: .5;
+      cursor: default;
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .empty {
+      grid-column: 1 / -1;
+      padding: 24px 16px;
+      border: 1px dashed #ffffff25;
+      border-radius: 18px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .phone-art {
+      display: grid;
+      place-items: center;
+      height: 100px;
+      margin: -2px -4px 10px;
+      border-radius: 15px;
+      background:
+        radial-gradient(circle at 50% 65%, #9a62ff45, transparent 46%),
+        linear-gradient(135deg, #252435, #171722);
+      font-size: 57px;
+    }
+
+    .rarity {
+      display: inline-block;
+      margin-bottom: 7px;
+      padding: 4px 7px;
+      border-radius: 7px;
+      background: #ffffff12;
+      color: #d8c5ff;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .rarity.rare { color: #60a5fa; background: #3b82f622; }
+    .rarity.epic { color: #c084fc; background: #a855f722; }
+    .rarity.legendary { color: #fbbf24; background: #f59e0b22; }
+
+    .stars {
+      margin: 4px 0 8px;
+      color: #fbbf24;
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+
+    .sell-button {
+      width: 100%;
+      margin-top: 11px;
+      border: 0;
+      border-radius: 10px;
+      padding: 10px;
+      color: #07130b;
+      background: var(--green);
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .sell-all {
+      border: 1px solid #ffffff20;
+      border-radius: 10px;
+      padding: 8px 10px;
+      color: #fff;
+      background: #ffffff0c;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .rating-card {
+      padding: 18px;
+      border: 1px solid #ffffff14;
+      border-radius: 20px;
+      background: linear-gradient(145deg, #20202d, #13131c);
+    }
+
+    .rating-score {
+      margin: 5px 0 4px;
+      color: #fbbf24;
+      font-size: 30px;
+      font-weight: 900;
+    }
+
+    .rating-note { color: var(--muted); font-size: 12px; }
+
+    .leaderboard {
+      margin-top: 15px;
+      overflow: hidden;
+      border: 1px solid #ffffff14;
+      border-radius: 17px;
+      background: #151520;
+    }
+
+    .leader-row {
+      display: grid;
+      grid-template-columns: 36px 1fr auto;
+      align-items: center;
+      gap: 9px;
+      padding: 13px 14px;
+      border-bottom: 1px solid #ffffff0d;
+    }
+
+    .leader-row:last-child { border-bottom: 0; }
+    .leader-row.me { background: #8b5cf61b; }
+
+    .leader-place {
+      color: #c4b5fd;
+      font-weight: 900;
+    }
+
+    .leader-name { font-weight: 700; }
+    .leader-points { color: #fbbf24; font-size: 12px; font-weight: 800; }
+
+    .bottom-nav {
+      position: fixed;
+      z-index: 10;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      border-top: 1px solid #ffffff12;
+      background: #101019ed;
+      backdrop-filter: blur(14px);
+    }
+
+    .nav-button {
+      width: min(31%, 155px);
+      border: 0;
+      border-radius: 13px;
+      padding: 10px 7px;
+      color: var(--muted);
+      background: transparent;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .nav-button.active {
+      color: #fff;
+      background: #8b5cf633;
+    }    .toast {
+      position: fixed;
+      z-index: 20;
+      right: 16px;
+      bottom: 83px;
+      left: 16px;
+      max-width: 480px;
+      margin: auto;
+      padding: 13px 16px;
+      border: 1px solid #ffffff20;
+      border-radius: 14px;
+      background: #242132;
+      box-shadow: 0 10px 30px #0008;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 700;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(10px);
+      transition: .2s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .hint {
+      margin-top: 13px;
+      color: #77778a;
+      font-size: 11px;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    @media (max-width: 360px) {
+      .app { padding-right: 12px; padding-left: 12px; }
+      .case, .phone-card { padding: 11px; }
+      .case-footer { align-items: stretch; flex-direction: column; }
+      .open-button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">PHONE <span>DROP</span></div>
+      <div class="balance" id="balance">₽0</div>
+    </header>
+
+    <section class="hero">
+      <h1>Открывай кейсы — собирай iPhone</h1>
+      <p>Тебе могут выпасть разные модели. Продавай находки и поднимайся в рейтинге.</p>
+    </section>
+
+    <section class="daily">
+      <div>
+        <div class="daily-title">🎁 Ежедневный бонус</div>
+        <div class="daily-sub">Забирай 500 ₽ раз в день</div>
+      </div>
+      <button class="button" id="dailyButton">Забрать</button>
+    </section>
+
+    <section class="page active" id="casesPage">
+      <div class="section-head">
+        <h2>Кейсы</h2>
+        <span>Выбери свой</span>
+      </div>
+      <div class="cases" id="casesList"></div>
+    </section>
+
+    <section class="page" id="inventoryPage">
+      <div class="section-head">
+        <h2>Мои iPhone</h2>
+        <button class="sell-all" id="sellAllButton">Продать все</button>
+      </div>
+      <div class="inventory" id="inventoryList"></div>
+    </section>
+
+    <section class="page" id="ratingPage">
+      <div class="section-head">
+        <h2>Рейтинг</h2>
+        <span>Лучшие коллекционеры</span>
+      </div>
+      <div class="rating-card">
+        <div>Твой рейтинг</div>
+        <div class="rating-score" id="myScore">0 очков</div>
+        <div class="rating-note" id="myRank">Открывай и продавай iPhone, чтобы набрать очки</div>
+      </div>
+      <div class="leaderboard" id="leaderboard"></div>
+      <div class="hint">Очки начисляются за проданные и находящиеся в коллекции iPhone.</div>
+    </section>
+
+    <div class="hint">Все рубли и продажи внутри игры виртуальные.</div>
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-button active" data-page="casesPage">📦 Кейсы</button>
+    <button class="nav-button" data-page="inventoryPage">📱 Коллекция</button>
+    <button class="nav-button" data-page="ratingPage">🏆 Рейтинг</button>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const phones = {
+      iphone11: {
+        name: "iPhone 11", emoji: "📱", stars: 2,
+        rarity: "Обычный", rarityClass: "", value: 900
+      },
+      iphone12: {
+        name: "iPhone 12", emoji: "📱", stars: 3,
+        rarity: "Обычный", rarityClass: "", value: 1600
+      },
+      iphone13: {
+        name: "iPhone 13", emoji: "📱", stars: 3,
+        rarity: "Редкий", rarityClass: "rare", value: 2800
+      },
+      iphone14: {
+        name: "iPhone 14", emoji: "📱", stars: 4,
+        rarity: "Редкий", rarityClass: "rare", value: 4200
+      },
+      iphone15: {
+        name: "iPhone 15", emoji: "📱", stars: 4,
+        rarity: "Эпический", rarityClass: "epic", value: 6500
+      },
+      iphone15pro: {
+        name: "iPhone 15 Pro", emoji: "📱", stars: 5,
+        rarity: "Эпический", rarityClass: "epic", value: 9500
+      },
+      iphone16: {
+        name: "iPhone 16", emoji: "📱", stars: 5,
+        rarity: "Легендарный", rarityClass: "legendary", value: 14000
+      },
+      iphone16pro: {
+        name: "iPhone 16 Pro Max", emoji: "📱", stars: 5,        rarity: "Легендарный", rarityClass: "legendary", value: 22000
+      }
+    };
+
+    const cases = [
+      {
+        id: "starter",
+        name: "Стартовый",
+        emoji: "🎁",
+        price: 300,
+        description: "Базовые модели и шанс на редкий iPhone",
+        drops: [
+          { id: "iphone11", weight: 40 },
+          { id: "iphone12", weight: 32 },
+          { id: "iphone13", weight: 18 },
+          { id: "iphone14", weight: 8 },
+          { id: "iphone15", weight: 2 }
+        ]
+      },
+      {
+        id: "pro",
+        name: "Pro-кейс",
+        emoji: "💎",
+        price: 900,
+        description: "Больше шансов на редкие модели",
+        drops: [
+          { id: "iphone12", weight: 15 },
+          { id: "iphone13", weight: 30 },
+          { id: "iphone14", weight: 27 },
+          { id: "iphone15", weight: 18 },
+          { id: "iphone15pro", weight: 8 },
+          { id: "iphone16", weight: 2 }
+        ]
+      },
+      {
+        id: "elite",
+        name: "Элитный",
+        emoji: "👑",
+        price: 1800,
+        description: "Попробуй получить легендарный iPhone",
+        drops: [
+          { id: "iphone14", weight: 16 },
+          { id: "iphone15", weight: 27 },
+          { id: "iphone15pro", weight: 26 },
+          { id: "iphone16", weight: 21 },
+          { id: "iphone16pro", weight: 10 }
+        ]
+      }
+    ];
+
+    const botPlayers = [
+      { name: "Алексей", points: 52000 },
+      { name: "iPhone King", points: 38700 },
+      { name: "Мария", points: 29400 },
+      { name: "DropMaster", points: 21500 },
+      { name: "Даня", points: 14800 },
+      { name: "Катя", points: 9700 },
+      { name: "ProPlayer", points: 5100 }
+    ];
+
+    const storageKey = "phoneDropSaveV1";
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey));
+        if (saved && typeof saved.balance === "number" && Array.isArray(saved.inventory)) {
+          return {
+            balance: saved.balance,
+            inventory: saved.inventory.filter(item => phones[item.phoneId]),
+            soldTotal: Number(saved.soldTotal) || 0,
+            lastDaily: saved.lastDaily || ""
+          };
+        }
+      } catch (error) {}
+      return { balance: 5000, inventory: [], soldTotal: 0, lastDaily: "" };
+    }
+
+    let state = loadState();
+    let isOpening = false;
+    let toastTimer;
+
+    const money = amount => new Intl.NumberFormat("ru-RU", {
+      style: "currency",
+      currency: "RUB",
+      maximumFractionDigits: 0
+    }).format(amount);
+
+    function saveState() {
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 2300);
+    }
+
+    function getScore() {
+      const collectionValue = state.inventory.reduce((sum, item) => {
+        return sum + phones[item.phoneId].value;
+      }, 0);
+      return state.soldTotal + collectionValue;
+    }
+
+    function renderCases() {
+      const list = document.getElementById("casesList");
+      list.innerHTML = cases.map(item => `
+        <article class="case">
+          <div class="case-art">${item.emoji}</div>
+          <h3>${item.name}</h3>
+          <p>${item.description}</p>
+          <div class="case-footer">
+            <span class="price">${money(item.price)}</span>
+            <button class="open-button" data-case="${item.id}">
+              Открыть
+            </button>
+          </div>
+        </article>
+      `).join("");
+
+      list.querySelectorAll("[data-case]").forEach(button => {
+        button.addEventListener("click", () => openCase(button.dataset.case, button));
+      });
+    }
+
+    function renderInventory() {
+      const list = document.getElementById("inventoryList");
+      const sellAllButton = document.getElementById("sellAllButton");
+
+      sellAllButton.disabled = state.inventory.length === 0;      sellAllButton.style.opacity = state.inventory.length ? "1" : ".45";
+
+      if (!state.inventory.length) {
+        list.innerHTML = `<div class="empty">Коллекция пока пуста.<br>Открой кейс, чтобы получить свой первый iPhone.</div>`;
+        return;
+      }
+
+      list.innerHTML = state.inventory.map(item => {
+        const phone = phones[item.phoneId];
+        return `
+          <article class="phone-card">
+            <div class="phone-art">${phone.emoji}</div>
+            <span class="rarity ${phone.rarityClass}">${phone.rarity}</span>
+            <h3>${phone.name}</h3>
+            <div class="stars">${"★".repeat(phone.stars)}${"☆".repeat(5 - phone.stars)}</div>
+            <p>Цена продажи: <b>${money(phone.value)}</b></p>
+            <button class="sell-button" data-sell="${item.id}">Продать за ${money(phone.value)}</button>
+          </article>
+        `;
+      }).join("");
+
+      list.querySelectorAll("[data-sell]").forEach(button => {
+        button.addEventListener("click", () => sellPhone(button.dataset.sell));
+      });
+    }
+
+    function renderRating() {
+      const score = getScore();
+      const players = [...botPlayers, { name: "Ты", points: score, isMe: true }]
+        .sort((a, b) => b.points - a.points);
+
+      const rank = players.findIndex(player => player.isMe) + 1;
+
+      document.getElementById("myScore").textContent =
+        `${new Intl.NumberFormat("ru-RU").format(score)} очков`;
+      document.getElementById("myRank").textContent =
+        `Твоё место: ${rank} из ${players.length}`;
+
+      document.getElementById("leaderboard").innerHTML = players.map((player, index) => `
+        <div class="leader-row ${player.isMe ? "me" : ""}">
+          <div class="leader-place">${index + 1}</div>
+          <div class="leader-name">${player.name}${player.isMe ? " (ты)" : ""}</div>
+          <div class="leader-points">${new Intl.NumberFormat("ru-RU").format(player.points)}</div>
+        </div>
+      `).join("");
+    }
+
+    function render() {
+      document.getElementById("balance").textContent = money(state.balance);
+      renderCases();
+      renderInventory();
+      renderRating();
+
+      const today = new Date().toLocaleDateString("sv-SE");
+      const dailyButton = document.getElementById("dailyButton");
+      const alreadyClaimed = state.lastDaily === today;
+
+      dailyButton.disabled = alreadyClaimed;
+      dailyButton.textContent = alreadyClaimed ? "Получено" : "Забрать";
+      saveState();
+    }
+
+    function pickDrop(dropList) {
+      const totalWeight = dropList.reduce((sum, item) => sum + item.weight, 0);
+      let roll = Math.random() * totalWeight;
+
+      for (const item of dropList) {
+        roll -= item.weight;
+        if (roll <= 0) return item.id;
+      }
+
+      return dropList[dropList.length - 1].id;
+    }
+
+    function openCase(caseId, button) {
+      if (isOpening) return;
+
+      const selectedCase = cases.find(item => item.id === caseId);
+      if (!selectedCase) return;
+
+      if (state.balance < selectedCase.price) {
+        showToast("Недостаточно рублей для открытия кейса");
+        return;
+      }
+
+      state.balance -= selectedCase.price;
+      isOpening = true;
+      button.disabled = true;
+      button.textContent = "Открываем…";
+      render();
+
+      setTimeout(() => {
+        const phoneId = pickDrop(selectedCase.drops);
+        const item = {
+          id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+          phoneId
+        };
+
+        state.inventory.unshift(item);
+        const phone = phones[phoneId];
+        isOpening = false;
+        render();
+        showToast(`Выпал ${phone.name}! Можно продать за ${money(phone.value)}`);
+
+        if (window.Telegram && window.Telegram.WebApp) {
+          try { window.Telegram.WebApp.HapticFeedback.notificationOccurred("success"); } catch (error) {}
+        }
+      }, 700);
+    }
+
+    function sellPhone(itemId) {
+      const index = state.inventory.findIndex(item => item.id === itemId);
+      if (index === -1) return;
+
+      const [item] = state.inventory.splice(index, 1);      const phone = phones[item.phoneId];
+
+      state.balance += phone.value;
+      state.soldTotal += phone.value;
+      render();
+      showToast(`${phone.name} продан за ${money(phone.value)}`);
+
+      if (window.Telegram && window.Telegram.WebApp) {
+        try { window.Telegram.WebApp.HapticFeedback.impactOccurred("light"); } catch (error) {}
+      }
+    }
+
+    document.getElementById("sellAllButton").addEventListener("click", () => {
+      if (!state.inventory.length) return;
+
+      const total = state.inventory.reduce((sum, item) => {
+        return sum + phones[item.phoneId].value;
+      }, 0);
+
+      state.soldTotal += total;
+      state.balance += total;
+      state.inventory = [];
+      render();
+      showToast(`Все iPhone проданы за ${money(total)}`);
+    });
+
+    document.getElementById("dailyButton").addEventListener("click", () => {
+      const today = new Date().toLocaleDateString("sv-SE");
+      if (state.lastDaily === today) return;
+
+      state.lastDaily = today;
+      state.balance += 500;
+      render();
+      showToast("Ежедневный бонус: +500 ₽");
+    });
+
+    document.querySelectorAll(".nav-button").forEach(button => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".nav-button").forEach(item => item.classList.remove("active"));
+        document.querySelectorAll(".page").forEach(page => page.classList.remove("active"));
+
+        button.classList.add("active");
+        document.getElementById(button.dataset.page).classList.add("active");
+      });
+    });
+
+    if (window.Telegram && window.Telegram.WebApp) {
+      window.Telegram.WebApp.ready();
+      window.Telegram.WebApp.expand();
+    }
+
+    render();
+  </script>
+</body>
+</html>
